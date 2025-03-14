@@ -1,25 +1,28 @@
 const express = require("express");
-const QRCode = require("qrcode");
 const cors = require("cors");
-const fs = require("fs");
-const path = require("path");
+const fetch = require("node-fetch");
 
 const app = express();
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-app.post("/generate-qr", async (req, res) => {
+app.post("/generate-pass", async (req, res) => {
     try {
-        const { data } = req.body;
-        if (!data) return res.status(400).json({ error: "Missing data" });
+        const response = await fetch("https://www.passslot.com/api/v1/passes", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer YOUR_API_KEY" // Replace with your actual API key
+            },
+            body: JSON.stringify(req.body)
+        });
 
-        const qrCodePath = path.join(__dirname, "qr-code.png");
-        await QRCode.toFile(qrCodePath, data);
-
-        res.sendFile(qrCodePath);
+        const data = await response.json();
+        res.json(data);
     } catch (error) {
-        res.status(500).json({ error: "Failed to generate QR code" });
+        res.status(500).json({ error: "Failed to fetch PassSlot API", details: error });
     }
 });
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
