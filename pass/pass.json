@@ -1,0 +1,12 @@
+{
+  "formatVersion": 1,
+  "serialNumber": "1741837355506",
+  "organizationName": "Your Company",
+  "description": "QR Code Pass",
+  "barcode": {
+    "message": "Scan this QR",
+    "format": "PKBarcodeFormatQR",
+    "messageEncoding": "iso-8859-1"
+  },
+  "backgroundColor": "rgb(255,255,255)"
+}

@@ -1,25 +1,32 @@
 const express = require("express");
 const cors = require("cors");
-const fetch = require("node-fetch");
 
 const app = express();
+app.use(cors());
 app.use(cors());
 app.use(express.json());
 
 app.post("/generate-pass", async (req, res) => {
     try {
-        const response = await fetch("https://www.passslot.com/api/v1/passes", {
+        console.log("test");
+        const response = await fetch("https://api.passslot.com/v1/templates/4523222026551296/pass", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": "Bearer YOUR_API_KEY" // Replace with your actual API key
+                "Authorization": "tyKAtRMzkKRDNgccTfiChaWOCGuXKFXhDJebSHfCszeyRsIXQqfaIXpVdmvsIVNR" // Replace with your actual API key
             },
-            body: JSON.stringify(req.body)
+            body: JSON.stringify({
+                "firstName": "John",
+                "lastName": "Doe",
+                "memberSince": "2012"
+            }
+            )
         });
-
+        console.log(response);
         const data = await response.json();
         res.json(data);
     } catch (error) {
+        console.log(error,"error");
         res.status(500).json({ error: "Failed to fetch PassSlot API", details: error });
     }
 });
