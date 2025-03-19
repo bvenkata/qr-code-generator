@@ -15,12 +15,7 @@ app.post("/generate-pass", async (req, res) => {
                 "Content-Type": "application/json",
                 "Authorization": "tyKAtRMzkKRDNgccTfiChaWOCGuXKFXhDJebSHfCszeyRsIXQqfaIXpVdmvsIVNR" // Replace with your actual API key
             },
-            body: JSON.stringify({
-                "firstName": "John",
-                "lastName": "Doe",
-                "memberSince": "2012"
-            }
-            )
+            body: JSON.stringify(req.body)
         });
         console.log(response);
         const data = await response.json();
