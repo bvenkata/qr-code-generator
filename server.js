@@ -15,14 +15,14 @@ app.post("/generate-pass", async (req, res) => {
         const database = client.db("managevent"); // Replace with your database name
         const collection = database.collection("register");
 
-        const { phoneNumber, ...passData } = req.body;
+        const { phone, ...passData } = req.body;
 
-        const existingRecord = await collection.findOne({ phoneNumber });
+        const existingRecord = await collection.findOne({ phone });
 
         if (existingRecord) {
-            await collection.updateOne({ phoneNumber }, { $set: passData });
+            await collection.updateOne({ phone }, { $set: passData });
         } else {
-            await collection.insertOne({ phoneNumber, ...passData });
+            await collection.insertOne({ phone, ...passData });
         }
 
         const response = await fetch("https://api.passslot.com/v1/templates/4523222026551296/pass", {
@@ -35,10 +35,34 @@ app.post("/generate-pass", async (req, res) => {
         });
 
         const data = await response.json();
+
+        const { serialNumber, passTypeIdentifier, url } = data;
+
+        await collection.updateOne(
+            { phone },
+            { $set: { serialNumber, passTypeIdentifier, url } }
+        );
+
         res.json(data);
     } catch (error) {
         console.log(error, "error");
         res.status(500).json({ error: "Failed to fetch PassSlot API", details: error });
+    } finally {
+        await client.close();
+    }
+});
+
+app.get("/get-records", async (req, res) => {
+    try {
+        await client.connect();
+        const database = client.db("managevent"); // Replace with your database name
+        const collection = database.collection("register");
+
+        const records = await collection.find({}).toArray();
+        res.json(records);
+    } catch (error) {
+        console.log(error, "error");
+        res.status(500).json({ error: "Failed to fetch records", details: error });
     } finally {
         await client.close();
     }
