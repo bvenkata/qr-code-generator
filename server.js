@@ -1,38 +1,53 @@
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.post("/generate-pass", async (req, res) => {
-    try {
-        const response = await fetch("https://api.passslot.com/v1/templates/4523222026551296/pass", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "tyKAtRMzkKRDNgccTfiChaWOCGuXKFXhDJebSHfCszeyRsIXQqfaIXpVdmvsIVNR" // Replace with your actual API key
-            },
-            body: JSON.stringify(req.body)
-        });
+// MongoDB Atlas connection string
+const mongoUri = 'mongodb+srv://bvenkata:QxKlT2REymkzNeMa@cluster0.xqdp3.mongodb.net/majesticsalon?retryWrites=true&w=majority&appName=Cluster0';
 
-        const data = await response.json();
-        res.json(data);
-    } catch (error) {
-        console.log(error, "error");
-        res.status(500).json({ error: "Failed to fetch PassSlot API", details: error });
-    }
+mongoose.connect(mongoUri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('✅ Connected to MongoDB Atlas: majesticsalon'))
+.catch((err) => console.error('❌ MongoDB connection error:', err));
+
+// Define Schema
+const waitlistSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  zip: { type: String, required: true },
+  purpose: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
 });
 
-app.get("/get-records", async (req, res) => {
-    try {
-        // Since MongoDB is removed, return a placeholder response
-        res.json({ message: "No database connected. Records cannot be fetched." });
-    } catch (error) {
-        console.log(error, "error");
-        res.status(500).json({ error: "Failed to fetch records", details: error });
-    }
+// Define Model (explicitly use 'elderlycare' collection)
+const WaitlistEntry = mongoose.model('WaitlistEntry', waitlistSchema, 'elderlycare');
+
+// API route to handle submissions
+app.post('/api/waitlist', async (req, res) => {
+  const { name, email, zip, purpose } = req.body;
+
+  if (!name || !email || !zip || !purpose) {
+    return res.status(400).json({ error: 'All fields are required.' });
+  }
+
+  try {
+    const entry = new WaitlistEntry({ name, email, zip, purpose });
+    await entry.save();
+    res.status(201).json({ message: '✅ Waitlist entry saved successfully.' });
+  } catch (err) {
+    console.error('❌ Save error:', err);
+    res.status(500).json({ error: 'Server error. Please try again later.' });
+  }
 });
 
+// Start server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running at http://localhost:${PORT}`);
+});

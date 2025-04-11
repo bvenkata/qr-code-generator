@@ -15,7 +15,9 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "fs": "^0.0.1-security",
+    "googleapis": "^148.0.0",
     "mongodb": "^6.15.0",
+    "mongoose": "^8.13.2",
     "passkit-generator": "^3.3.1",
     "path": "^0.12.7",
     "qrcode": "^1.5.4"
